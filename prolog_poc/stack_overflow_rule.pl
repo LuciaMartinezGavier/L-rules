@@ -1,39 +1,5 @@
-% GetVariable description
-arg_in(getVariable, variableName).
-arg_in(getVariable, vendorGuid).
-arg_in(getVariable, dataSize).
-arg_out(getVariable, attributes).
-arg_out(getVariable, dataSize).
-arg_out(getVariable, buffer).
-buffer_write(getVariable, buffer, dataSize).
-
-% Source Code description
-source_code([
-    stack(main, buffer_var2),
-    func_call(
-        main,
-        getVariable,
-        [
-            arg(variableName_var1, variableName),
-            arg(vendorGuid_var1, vendorGuid),
-            arg(attributes_var1, attributes),
-            arg(dataSize_var, dataSize),
-            arg(buffer_var1, buffer)
-        ]
-    ),
-    func_call(
-        main,
-        getVariable,
-        [
-            arg(variableName_var2, variableName),
-            arg(vendorGuid_var2, vendorGuid),
-            arg(attributes_var2, attributes),
-            arg(dataSize_var, dataSize),
-        arg(buffer_var2, buffer)
-    ]
-    ),
-    buffer_alloc(main, buffer_var2, dataSize_var)
-]).
+:- use_module(uefi_axioms, [arg_in/2, arg_out/2, buffer_write/3]).
+:- use_module(source_code, [source_code/1]).
 
 % Rule to check if there are at least two func_calls with the same first two parameters
 % and FuncCall1 appears before FuncCall2 in the list
