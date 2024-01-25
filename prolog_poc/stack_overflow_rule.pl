@@ -1,30 +1,27 @@
 :- use_module(uefi_axioms, [arg_in/2, arg_out/2, buffer_write/3]).
-:- use_module(source_vuln, [source_vuln/1]).
-:- use_module(source_novuln, [source_novuln/1]).
 
-% Rule to check if there are at least two func_calls with the same first two
-% parameters and FuncCall1 appears before FuncCall2 in the list
-has_duplicate_func_calls(List, FuncCall1, FuncCall2) :-
-    append(Prefix, [func_call(Func, Parent, Args1),
-    func_call(Func, Parent, Args2)|_], List),
-    
-    FuncCall1 = func_call(Func, Parent, Args1),
-    FuncCall2 = func_call(Func, Parent, Args2),
-    Prefix \= [].
+% sublist_between/3 extracts a sublist between Element1 and Element2
+% in the given List and unifies it with Sublist.
+sublist_between(Element1, Element2, List, Sublist) :-
+    append(_, [Element1|Rest1], List),
+    append(Sublist, [Element2|_], Rest1).
 
-func_call_unzip(func_call(F, P, A), Function, Parent, Arguments) :- 
-    Function = F, Parent = P, Arguments = A.
+sublist_between_func_calls(List, Sublist, FuncCall1, FuncCall2) :-
+    sublist_between(func_call(FunctionName, Args1), func_call(FunctionName, Args2), List, Sublist),
+    FuncCall1 = func_call(FunctionName, Args1),
+    FuncCall2 = func_call(FunctionName, Args2).
 
-% Rule to check if Element is between Y and Z in the list L
-is_between(Element, X, Y, List) :-
-    append(_, [X, Element, Y|_], List).
+func_call_unzip(func_call(F, A), Function, Arguments) :- 
+    Function = F, Arguments = A.
 
 % Rule
 stack_overflow(SourceCode) :-
+    member(function_def(_, _, FunctionBody), SourceCode),
+
     % there are two calls to getVariable
-    has_duplicate_func_calls(SourceCode, FuncCall1, FuncCall2),
-    func_call_unzip(FuncCall1, Parent, Function, Args1),
-    func_call_unzip(FuncCall2, Parent, Function, Args2),
+    sublist_between_func_calls(FunctionBody, BetweenCallsCode, FuncCall1, FuncCall2),
+    func_call_unzip(FuncCall1, Function, Args1),
+    func_call_unzip(FuncCall2, Function, Args2),
 
     % There is a parameter in/out
     arg_out(Function, DataSize),
@@ -40,11 +37,9 @@ stack_overflow(SourceCode) :-
     member(arg(BufferValue, Buffer), Args2),
 
     % the buffer is located in the stack
-    member(stack(Parent, BufferValue), SourceCode),
+    member(decl(BufferValue, stack), FunctionBody),
     % there is no memory alloc in between calls
-    \+ is_between(
-        buffer_alloc(Parent, BufferValue, _),
-        FuncCall1,
-        FuncCall2,
-        SourceCode
+    \+ member(
+        buffer_alloc(BufferValue, _),
+        BetweenCallsCode
     ).
