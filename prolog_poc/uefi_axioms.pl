@@ -1,6 +1,6 @@
 :- module(uefi_axioms, [arg_in/2, arg_out/2, buffer_write/3]).
 
-% GetVariable description
+% GetVariable service axioms
 arg_in(getVariable, variableName).
 arg_in(getVariable, vendorGuid).
 arg_in(getVariable, dataSize).

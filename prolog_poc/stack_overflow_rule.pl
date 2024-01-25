@@ -1,5 +1,6 @@
 :- use_module(uefi_axioms, [arg_in/2, arg_out/2, buffer_write/3]).
-:- use_module(source_code, [source_code/1]).
+:- use_module(source_vuln, [source_vuln/1]).
+:- use_module(source_novuln, [source_novuln/1]).
 
 % Rule to check if there are at least two func_calls with the same first two
 % parameters and FuncCall1 appears before FuncCall2 in the list

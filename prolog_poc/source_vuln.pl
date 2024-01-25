@@ -1,10 +1,9 @@
-:- module(source_code, [source_code/1]).
+:- module(source, [source_vuln/1]).
 
 % Source Code description
-source_code([
-    stack(main, buffer_var2),
+source_vuln([
+    stack(buffer_var2),
     func_call(
-        main,
         getVariable,
         [
             arg(variableName_var1, variableName),
@@ -14,16 +13,16 @@ source_code([
             arg(buffer_var1, buffer)
         ]
     ),
+
     func_call(
-        main,
         getVariable,
         [
             arg(variableName_var2, variableName),
             arg(vendorGuid_var2, vendorGuid),
             arg(attributes_var2, attributes),
             arg(dataSize_var, dataSize),
-        arg(buffer_var2, buffer)
+            arg(buffer_var2, buffer)
     ]
     ),
-    buffer_alloc(main, buffer_var2, dataSize_var)
+    buffer_alloc(buffer_var2, dataSize_var)
 ]).
